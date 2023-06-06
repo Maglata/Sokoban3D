@@ -1,0 +1,24 @@
+Important Info:
+
+E - Empty Space
+
+X - Wall
+
+P - Player
+
+B - Box
+
+T - Target
+
+b - Box on a Target
+
+p - Player on a Target
+
+Width and Height are defined on the next line in that order
+
+All lines must be separated by an enter
+
+Rules:
+1. There can be only 1 player
+2. There must be at least 1 target and 1 box
+3. The number of targets and boxes must be equal
