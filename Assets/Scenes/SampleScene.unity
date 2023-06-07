@@ -982,7 +982,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c76202bea8df2a2479e5a277f7375bff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Levelnumber: 3
+  Levelnumber: 2
   Camera: {fileID: 963194228}
   playerTile: {fileID: 721129335946948922, guid: 081bf8a76a88e34408793b404f24af5d, type: 3}
   backgroundTile: {fileID: 4843952549958049801, guid: a8da4ded41d1b834da748f276ca94539, type: 3}

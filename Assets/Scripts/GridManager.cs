@@ -16,6 +16,11 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject targetTile;
 
     public Cell[,] grid;
+    private int gridHeight;
+    private int gridWidth;
+
+    private PlayerController playerController;
+
     private MenuManager menuManager;
 
     private string levelsDirectory;
@@ -72,6 +77,8 @@ public class GridManager : MonoBehaviour
         crates = new List<GameObject>();
 
         Debug.Log($"Selected Width:{width} Height:{height}");
+        gridHeight = height;
+        gridWidth = width;
 
         for (int y = 0; y < height; y++)
         {
@@ -129,6 +136,7 @@ public class GridManager : MonoBehaviour
                     // Player
                     spawnedObject = Instantiate(playerTile, position, Quaternion.identity);
                     spawnedObject.name = $"Player {x} {height - y - 1}";
+                    playerController = spawnedObject.GetComponent<PlayerController>();
                     cell.tile = spawnedObject;
                     grid[x, height-y-1] = cell; // Update the grid with the player object
                     playerDetected = true;
@@ -191,6 +199,8 @@ public class GridManager : MonoBehaviour
                     spawnedObject = Instantiate(playerTile, position, Quaternion.identity);
                     spawnedObject.name = $"Player {x} {height - y - 1}";
                     spawnedObject.transform.parent = level.transform;
+
+                    playerController = spawnedObject.GetComponent<PlayerController>();
 
                     cell.tile = spawnedObject;
                     cell.isTarget = true;
@@ -272,11 +282,17 @@ public class GridManager : MonoBehaviour
     }
     public Cell GetCellAtPosition(Vector3 position)
     {
+
         int x = Mathf.RoundToInt(position.x);
         int y = Mathf.RoundToInt(position.y);
 
+        // Debug.Log($"Getting Cell At {position}, X: {x}, Y: {y}");
+
         if (x >= 0 && x < grid.GetLength(0) && y >= 0 && y < grid.GetLength(1))
+        {
+            Debug.Log("Found Cell:" + grid[x, y] + $"At X:{x} Y:{y}");
             return grid[x, y];
+        }
 
         return null;
     }
@@ -299,7 +315,7 @@ public class GridManager : MonoBehaviour
         // Update Position
         obj.transform.position = targetPos;
 
-        DisplayGrid();
+        // DisplayGrid();
 
     }
     public class Cell
@@ -385,4 +401,127 @@ public class GridManager : MonoBehaviour
             Debug.Log(row);
         }
     }
+
+    public void HandleMouseClick(Vector3 targetPosition)
+    {
+        Debug.LogError("Block Clicked!");
+
+        Debug.LogError($"Start Position:{playerController.PlayerPos()}, Final Position:{targetPosition}");
+
+        Cell startCell = GetCellAtPosition(playerController.PlayerPos());
+        Cell targetCell = GetCellAtPosition(targetPosition);       
+
+        if (startCell != null && targetCell != null)
+        {
+            List<Cell> path = FindShortestPath(startCell, targetCell);
+
+            if (path != null)
+            {
+                Debug.LogError("Moving Player...");
+                StartCoroutine(MovePlayerAlongPath(path));
+            }
+            else
+            {
+                Debug.LogWarning("No path found.");
+            }
+        }
+    }
+
+    private List<Cell> FindShortestPath(Cell startCell, Cell targetCell)
+    {
+        Debug.LogError("Checking For Path...");
+
+        // Perform BFS to find the shortest path
+        Queue<Cell> queue = new Queue<Cell>();
+        queue.Enqueue(startCell);
+
+        Dictionary<Cell, Cell> parentMap = new Dictionary<Cell, Cell>();
+        parentMap[startCell] = null;
+
+        bool pathFound = false;
+
+        while (queue.Count > 0)
+        {
+            Cell currentCell = queue.Dequeue();
+            // Debug.Log($"Checking...{currentCell}");
+            if (currentCell == targetCell)
+            {
+                Debug.LogError("Path Found!");
+                pathFound = true;
+                break;
+            }
+
+            foreach (Cell neighbor in GetNeighbors(currentCell))
+            {
+                if (!parentMap.ContainsKey(neighbor))
+                {
+                    queue.Enqueue(neighbor);
+                    parentMap[neighbor] = currentCell;
+                }
+            }
+        }
+
+        if (pathFound)
+        {
+            // Reconstruct the path from start to target
+            List<Cell> path = new List<Cell>();
+            Cell cell = targetCell;
+
+            while (cell != null)
+            {
+                path.Add(cell);
+                cell = parentMap[cell];
+            }
+
+            path.Reverse();
+
+            return path;
+        }
+
+        return null;
+    }
+    private List<Cell> GetNeighbors(Cell cell)
+    {
+        List<Cell> neighbors = new List<Cell>();
+
+        // Define the possible neighbor offsets
+        int[] xOffset = { -1, 1, 0, 0 };
+        int[] yOffset = { 0, 0, -1, 1 };
+
+        // Iterate over the offsets to find the neighbors
+        for (int i = 0; i < xOffset.Length; i++)
+        {
+            int neighborX = cell.x + xOffset[i];
+            int neighborY = gridHeight - 1 - cell.y + yOffset[i];
+
+            // Check if the neighbor is within the grid boundaries
+            if (neighborX >= 0 && neighborX < grid.GetLength(0) &&
+                neighborY >= 0 && neighborY < grid.GetLength(1))
+            {
+                Cell neighborCell = grid[neighborX, neighborY];
+                if (neighborCell.isPassable && neighborCell.tile == null)
+                {
+                    neighbors.Add(neighborCell);
+                }
+            }
+        }
+
+        return neighbors;
+    }
+
+    private IEnumerator MovePlayerAlongPath(List<Cell> path)
+    {
+        float moveDelay = 0.5f; // Adjust the delay between movements
+
+        foreach (Cell pathCell in path)
+        {          
+            Vector3 targetPosition = new Vector3(pathCell.x, gridHeight - pathCell.y - 1, 0);
+            //Debug.Log($"Moving to {targetPosition} cell {pathCell}");
+            MoveCelltoPosition(playerController.gameObject, targetPosition);
+            yield return new WaitForSeconds(moveDelay);
+        }
+        Debug.LogError("Finished Path");
+        // DisplayGrid();
+    }
+
 }

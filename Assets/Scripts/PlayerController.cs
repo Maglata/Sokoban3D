@@ -61,6 +61,11 @@ public class PlayerController : MonoBehaviour
             undoRedoManager.RedoMove();
         }
     }
+
+    public Vector3 PlayerPos()
+    {
+        return transform.position;
+    }
     private void MovePlayer(Vector3 direction)
     {
         originalPos = transform.position;
@@ -93,15 +98,16 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    if (invalidBox(crateTargetPos, direction))
+                    if (InvalidBox(crateTargetPos, direction))
                         Debug.Log("Tip: You can't win anymore");
                 }
                 // Undo Redo Manager stuff
                 undoRedoManager.AddAction(transform.gameObject, originalPos, targetPos, cell.tile, targetPos, crateTargetPos);
             }
-        }      
+        }
+        //Debug.Log(PlayerPos());
     }
-    public bool invalidBox(Vector3 targetPos, Vector3 direction)
+    public bool InvalidBox(Vector3 targetPos, Vector3 direction)
     {
         if (IsInCorner(targetPos))
             return true;
