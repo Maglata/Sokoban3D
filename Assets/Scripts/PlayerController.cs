@@ -99,6 +99,9 @@ public class PlayerController : MonoBehaviour
                 if (secondCell.isTarget)
                 {
                     gridManager.CheckWinCondition();
+
+                    if (CheckTwobyTwo(crateTargetPos))
+                        Debug.Log("Tip: You can't win anymore");
                 }
                 else
                 {
@@ -248,6 +251,64 @@ public class PlayerController : MonoBehaviour
         int[] xOffsetOrder = { -1, -1, 0, 1, 1, 1, 0, -1 };
         int[] yOffsetOrder = { 0, 1, 1, 1, 0, -1, -1, -1 };
 
+        for (int i = 0; i < xOffsetOrder.Length; i++)
+        {
+            switch (i)
+            {
+                case 0:
+                    if (CheckforCrate(cratePos + Vector3.left) && !gridManager.GetCellAtPosition(cratePos + Vector3.left).isTarget)
+                    {
+                        if (CheckforWall(cratePos + new Vector3(xOffsetOrder[1], yOffsetOrder[1], 0f)))
+                            if (CheckforWall(cratePos + new Vector3(xOffsetOrder[2], yOffsetOrder[2], 0f)))
+                                return true;
+                        if (CheckforWall(cratePos + new Vector3(xOffsetOrder[6], yOffsetOrder[6], 0f)))
+                            if (CheckforWall(cratePos + new Vector3(xOffsetOrder[7], yOffsetOrder[7], 0f)))
+                                return true;
+                    }
+                    break;
+                case 2:
+                    if (CheckforCrate(cratePos + Vector3.up) && !gridManager.GetCellAtPosition(cratePos + Vector3.up).isTarget)
+                    {
+                        if (CheckforWall(cratePos + new Vector3(xOffsetOrder[0], yOffsetOrder[0], 0f)))
+                            if (CheckforWall(cratePos + new Vector3(xOffsetOrder[1], yOffsetOrder[1], 0f)))
+                                return true;
+                        if (CheckforWall(cratePos + new Vector3(xOffsetOrder[3], yOffsetOrder[3], 0f)))
+                            if (CheckforWall(cratePos + new Vector3(xOffsetOrder[4], yOffsetOrder[4], 0f)))
+                                return true;
+                    }
+                    break;
+                case 4:
+                    if (CheckforCrate(cratePos + Vector3.right) && !gridManager.GetCellAtPosition(cratePos + Vector3.right).isTarget)
+                    {
+                        if (CheckforWall(cratePos + new Vector3(xOffsetOrder[2], yOffsetOrder[2], 0f)))
+                            if (CheckforWall(cratePos + new Vector3(xOffsetOrder[3], yOffsetOrder[3], 0f)))
+                                return true;
+                        if (CheckforWall(cratePos + new Vector3(xOffsetOrder[5], yOffsetOrder[5], 0f)))
+                            if (CheckforWall(cratePos + new Vector3(xOffsetOrder[6], yOffsetOrder[6], 0f)))
+                                return true;
+                    }
+                    break;
+                case 6:
+                    if (CheckforCrate(cratePos + Vector3.down) && !gridManager.GetCellAtPosition(cratePos + Vector3.down).isTarget)
+                    {
+                        if (CheckforWall(cratePos + new Vector3(xOffsetOrder[0], yOffsetOrder[0], 0f)))
+                            if (CheckforWall(cratePos + new Vector3(xOffsetOrder[7], yOffsetOrder[7], 0f)))
+                                return true;
+                        if (CheckforWall(cratePos + new Vector3(xOffsetOrder[4], yOffsetOrder[4], 0f)))
+                            if (CheckforWall(cratePos + new Vector3(xOffsetOrder[5], yOffsetOrder[5], 0f)))
+                                return true;
+                    }
+                    break;
+            }
+        }
+        return false;
+    }
+    /*
+    private bool CheckTwobyTwo(Vector3 cratePos)
+    {
+        int[] xOffsetOrder = { -1, -1, 0, 1, 1, 1, 0, -1 };
+        int[] yOffsetOrder = { 0, 1, 1, 1, 0, -1, -1, -1 };
+
         int cratecount = 0;
         int wallcount = 0;
 
@@ -257,9 +318,11 @@ public class PlayerController : MonoBehaviour
             int yOffset = yOffsetOrder[i];
 
             Vector3 checkPos = cratePos + new Vector3(xOffset, yOffset, 0f);
+            //Debug.Log($"Checking for 2 by 2 at {checkPos}");
 
             if (CheckforCrate(checkPos))
             {
+                Debug.Log($"Found Crate at: {checkPos}");
                 if (cratecount == 0)
                     cratecount++;
                 else
@@ -267,6 +330,7 @@ public class PlayerController : MonoBehaviour
             }
             else if (CheckforWall(checkPos))
             {
+                Debug.Log($"Found Wall at: {checkPos}");
                 if (wallcount != 2)
                     wallcount++;
                 else
@@ -283,6 +347,7 @@ public class PlayerController : MonoBehaviour
         }
         return false;
     }
+    */
 
     private bool CheckforWall(Vector3 targetPos)
     {

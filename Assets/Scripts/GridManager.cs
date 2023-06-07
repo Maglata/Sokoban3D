@@ -32,6 +32,7 @@ public class GridManager : MonoBehaviour
     private string filePath;
 
     private bool playerDetected;
+    private bool isPaused = false;
     private int targetCount;
     private int crateCount;
     private List<GameObject> crates;
@@ -268,20 +269,28 @@ public class GridManager : MonoBehaviour
         menuManager.resumeGame();
         Debug.ClearDeveloperConsole();
         Debug.Log("Level Reset");
+        isPaused = false;
     }
     public void NextLevel()
     {
-        // Currently if you click next and then reset it crashes since the levelnumber is being set here
-        filePath = Path.Combine(levelsDirectory, "Level" + Levelnumber + 1 + ".txt");
+        Levelnumber++;
+
+        filePath = Path.Combine(levelsDirectory, "Level" + Levelnumber + ".txt");
+
         if (File.Exists(filePath))
-        {
-            Levelnumber++;
+        {         
             Destroy(level);
             GenerateGridFromFile(filePath);
             menuManager.resumeGame();
+            isPaused = false;
         }
         else
+        {
             Debug.LogError("No Next Level found");
+            Levelnumber--;
+            filePath = Path.Combine(levelsDirectory, "Level" + Levelnumber + ".txt");
+        }
+            
 
     }
 
@@ -307,6 +316,7 @@ public class GridManager : MonoBehaviour
         if (cratesOnTargets == crateCount)
         {
             menuManager.winGame();
+            isPaused = true;
         }
     }
     public Cell GetCellAtPosition(Vector3 position)
@@ -433,29 +443,31 @@ public class GridManager : MonoBehaviour
 
     public void HandleMouseClick(Vector3 targetPosition)
     {
-
-        Debug.Log($"Start Position:{playerController.PlayerPos()}, Final Position:{targetPosition}");
-
-        Cell startCell = GetCellAtPosition(playerController.PlayerPos());
-        Cell targetCell = GetCellAtPosition(targetPosition);       
-
-        if (startCell != null && targetCell != null)
+        if(!isPaused)
         {
-            playerMovementPath = FindShortestPath(startCell, targetCell);
+            Debug.Log($"Start Position:{playerController.PlayerPos()}, Final Position:{targetPosition}");
 
-            if (playerMovementPath != null)
+            Cell startCell = GetCellAtPosition(playerController.PlayerPos());
+            Cell targetCell = GetCellAtPosition(targetPosition);
+
+            if (startCell != null && targetCell != null)
             {
-                Debug.Log("Moving Player...");
+                playerMovementPath = FindShortestPath(startCell, targetCell);
 
-                playerController.isMoving = true;
+                if (playerMovementPath != null)
+                {
+                    Debug.Log("Moving Player...");
 
-                isMovingPlayer = true;
+                    playerController.isMoving = true;
+
+                    isMovingPlayer = true;
+                }
+                else
+                {
+                    Debug.LogWarning("No path found.");
+                }
             }
-            else
-            {
-                Debug.LogWarning("No path found.");
-            }
-        }
+        }      
     }
     private List<Cell> FindShortestPath(Cell startCell, Cell targetCell)
     {
