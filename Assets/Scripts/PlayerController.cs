@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
 
     private UndoRedoManager undoRedoManager;
     private GridManager gridManager;
+    public bool isMoving = false;
 
     void Awake()
     {
@@ -20,45 +21,48 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Horizontal Movement
-        if (Input.GetButtonDown("Horizontal"))
+        if (!isMoving)
         {
-            if (Input.GetAxisRaw("Horizontal") == 1) // Movement to the Right
+            // Horizontal Movement
+            if (Input.GetButtonDown("Horizontal"))
             {
-                MovePlayer(Vector3.right);
-            }
-            else // Movement to the Left
-            {
-                MovePlayer(Vector3.left);
-            }
-
-        }
-        // Vertical Movement
-        if (Input.GetButtonDown("Vertical"))
-        {
-            if (Input.GetAxisRaw("Vertical") == 1) // Movement Up
-            {
-                MovePlayer(Vector3.up);
+                if (Input.GetAxisRaw("Horizontal") == 1) // Movement to the Right
+                {
+                    MovePlayer(Vector3.right);
+                }
+                else // Movement to the Left
+                {
+                    MovePlayer(Vector3.left);
+                }
 
             }
-            else // Movement Down
+            // Vertical Movement
+            if (Input.GetButtonDown("Vertical"))
             {
-                MovePlayer(Vector3.down);
+                if (Input.GetAxisRaw("Vertical") == 1) // Movement Up
+                {
+                    MovePlayer(Vector3.up);
+
+                }
+                else // Movement Down
+                {
+                    MovePlayer(Vector3.down);
+                }
             }
-        }
-        // Reset
-        if (Input.GetKeyDown(KeyCode.R))
-        {           
-            gridManager.ResetLevel();
-        }
-        // Undo
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            undoRedoManager.UndoMove();
-        }// Redo
-        else if (Input.GetKeyDown(KeyCode.X))
-        {
-            undoRedoManager.RedoMove();
+            // Reset
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                gridManager.ResetLevel();
+            }
+            // Undo
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                undoRedoManager.UndoMove();
+            }// Redo
+            else if (Input.GetKeyDown(KeyCode.X))
+            {
+                undoRedoManager.RedoMove();
+            }
         }
     }
 

@@ -418,6 +418,7 @@ public class GridManager : MonoBehaviour
             if (path != null)
             {
                 Debug.LogError("Moving Player...");
+                playerController.isMoving = true;
                 StartCoroutine(MovePlayerAlongPath(path));
             }
             else
@@ -522,6 +523,7 @@ public class GridManager : MonoBehaviour
         }
         Debug.LogError("Finished Path");
         // DisplayGrid();
+        playerController.isMoving = false;
     }
 
 }
