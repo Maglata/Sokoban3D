@@ -20,6 +20,10 @@ public class GridManager : MonoBehaviour
     private int gridWidth;
 
     private PlayerController playerController;
+    private float moveDelay = 0.5f;
+    private float currentDelay = 0f;
+    private bool isMovingPlayer = false;
+    private List<Cell> playerMovementPath;
 
     private MenuManager menuManager;
 
@@ -39,6 +43,31 @@ public class GridManager : MonoBehaviour
         filePath = Path.Combine(levelsDirectory, "Level" + Levelnumber + ".txt");
         GenerateGridFromFile(filePath);
         menuManager = GetComponent<MenuManager>();
+    }
+
+    // Update for moving the Player without a Coroutine with BFS
+    void Update()
+    {
+        if (isMovingPlayer)
+        {
+            if (playerMovementPath.Count > 0)
+            {
+                currentDelay += Time.deltaTime;
+                if (currentDelay >= moveDelay)
+                {
+                    MovePlayerToCell(playerMovementPath[0]);
+                    playerMovementPath.RemoveAt(0);
+                    currentDelay = 0f;
+                }
+            }
+            else
+            {
+                isMovingPlayer = false;
+                playerController.isMoving = false;
+                Debug.LogError("Finished Path");
+
+            }
+        }
     }
 
     void GenerateGridFromFile(string filePath)
@@ -290,7 +319,7 @@ public class GridManager : MonoBehaviour
 
         if (x >= 0 && x < grid.GetLength(0) && y >= 0 && y < grid.GetLength(1))
         {
-            Debug.Log("Found Cell:" + grid[x, y] + $"At X:{x} Y:{y}");
+            //Debug.Log("Found Cell:" + grid[x, y] + $"At X:{x} Y:{y}");
             return grid[x, y];
         }
 
@@ -404,22 +433,23 @@ public class GridManager : MonoBehaviour
 
     public void HandleMouseClick(Vector3 targetPosition)
     {
-        Debug.LogError("Block Clicked!");
 
-        Debug.LogError($"Start Position:{playerController.PlayerPos()}, Final Position:{targetPosition}");
+        Debug.Log($"Start Position:{playerController.PlayerPos()}, Final Position:{targetPosition}");
 
         Cell startCell = GetCellAtPosition(playerController.PlayerPos());
         Cell targetCell = GetCellAtPosition(targetPosition);       
 
         if (startCell != null && targetCell != null)
         {
-            List<Cell> path = FindShortestPath(startCell, targetCell);
+            playerMovementPath = FindShortestPath(startCell, targetCell);
 
-            if (path != null)
+            if (playerMovementPath != null)
             {
-                Debug.LogError("Moving Player...");
+                Debug.Log("Moving Player...");
+
                 playerController.isMoving = true;
-                StartCoroutine(MovePlayerAlongPath(path));
+
+                isMovingPlayer = true;
             }
             else
             {
@@ -427,10 +457,9 @@ public class GridManager : MonoBehaviour
             }
         }
     }
-
     private List<Cell> FindShortestPath(Cell startCell, Cell targetCell)
     {
-        Debug.LogError("Checking For Path...");
+        Debug.Log("Checking For Path...");
 
         // Perform BFS to find the shortest path
         Queue<Cell> queue = new Queue<Cell>();
@@ -447,7 +476,7 @@ public class GridManager : MonoBehaviour
             // Debug.Log($"Checking...{currentCell}");
             if (currentCell == targetCell)
             {
-                Debug.LogError("Path Found!");
+                Debug.Log("Path Found!");
                 pathFound = true;
                 break;
             }
@@ -510,20 +539,11 @@ public class GridManager : MonoBehaviour
         return neighbors;
     }
 
-    private IEnumerator MovePlayerAlongPath(List<Cell> path)
-    {
-        float moveDelay = 0.5f; // Adjust the delay between movements
-
-        foreach (Cell pathCell in path)
-        {          
-            Vector3 targetPosition = new Vector3(pathCell.x, gridHeight - pathCell.y - 1, 0);
-            //Debug.Log($"Moving to {targetPosition} cell {pathCell}");
-            MoveCelltoPosition(playerController.gameObject, targetPosition);
-            yield return new WaitForSeconds(moveDelay);
-        }
-        Debug.LogError("Finished Path");
+    private void MovePlayerToCell(Cell cell)
+    {       
+        Vector3 targetPosition = new Vector3(cell.x, gridHeight - cell.y - 1, 0);
+        //Debug.Log($"Moving to {targetPosition} cell {pathCell}");
+        MoveCelltoPosition(playerController.gameObject, targetPosition);
         // DisplayGrid();
-        playerController.isMoving = false;
     }
-
 }
